@@ -11,4 +11,6 @@ router.put("/:id", updateUser)
 
 router.delete("/:id", deleteUser)
 
+// router.post("/:id", compartilharUser)
+
 export default router
