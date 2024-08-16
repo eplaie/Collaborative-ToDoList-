@@ -55,3 +55,7 @@ export const deleteUser = (req, res) => {
     return res.status(200).json("Tarefa deletada com sucesso.");
   });
 };
+
+// export const compartilharUser = (req, res => {
+//   const q = ""
+// })
