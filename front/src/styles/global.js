@@ -24,7 +24,7 @@ const Global = createGlobalStyle`
     justify-content: center;
     background: linear-gradient(to bottom right, #000000, #272227);
     margin: 0;
-    overflow: hidden; 
+    // overflow: hidden; 
   }
 `;
 
