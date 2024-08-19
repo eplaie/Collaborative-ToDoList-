@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import todolistImage from '../images/todolist.png';
+import todolistImage from "../images/todolist.png";
+import axios from "axios";
 
 const Container = styled.div`
   display: flex;
@@ -126,17 +127,72 @@ const ActionButtons = styled.div`
 
 const Login = () => {
   const [open, setOpen] = useState(false);
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => {
+    setOpen(true);
+    setEmail(""); // Limpar o e-mail
+    setPassword(""); // Limpar a senha
+    setError(""); // Limpar mensagens de erro
+  };
+
   const handleClose = () => setOpen(false);
 
-  const handleLogin = () => {
-    // Lógica de autenticação (a ser implementada)
-    console.log("Username:", username);
-    console.log("Password:", password);
-    handleClose();
+  const handleLogin = async () => {
+    try {
+      setError(""); // Limpar erros anteriores
+      setSuccess(""); // Limpar mensagens de sucesso anteriores
+
+      const response = await axios.post("http://localhost:8800/login", {
+        email,
+        senha: password,
+      });
+
+      // Se o login for bem-sucedido, redirecione para a página /home
+      if (response.status === 200) {
+        window.location.href = "http://localhost:3000/home";
+      }
+    } catch (error) {
+      console.error("Erro ao fazer login:", error.response ? error.response.data : error.message);
+      setError("Erro ao fazer login. Verifique suas credenciais e tente novamente.");
+    }
+  };
+
+  const handleRegister = async () => {
+    try {
+      setError(""); // Limpar erros anteriores
+      setSuccess(""); // Limpar mensagens de sucesso anteriores
+      console.log({
+        nome: name,
+        email,
+        fone: phone,
+        senha: password,
+      });
+      const response = await axios.post("http://localhost:8800/register", {
+        nome: name,
+        email,
+        fone: phone,
+        senha: password,
+      });
+      console.log("Cadastro realizado com sucesso:", response.data);
+      setSuccess("Cadastro realizado com sucesso!");
+      // Limpar campos ou redirecionar
+      setName("");
+      setEmail("");
+      setPhone("");
+      setPassword("");
+    } catch (error) {
+      console.error(
+        "Erro ao cadastrar:",
+        error.response ? error.response.data : error.message
+      );
+      setError("Erro ao realizar o cadastro. Tente novamente.");
+    }
   };
 
   return (
@@ -154,8 +210,8 @@ const Login = () => {
           <Input
             type="text"
             placeholder="Insira seu nome"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
         </InputContainer>
         <InputContainer>
@@ -163,8 +219,8 @@ const Login = () => {
           <Input
             type="email"
             placeholder="Insira seu e-mail"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </InputContainer>
         <InputContainer>
@@ -172,8 +228,8 @@ const Login = () => {
           <Input
             type="tel"
             placeholder="Insira seu telefone"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
           />
         </InputContainer>
         <InputContainer>
@@ -185,7 +241,9 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
         </InputContainer>
-        <Button>Cadastrar</Button>
+        <Button onClick={handleRegister}>Cadastrar</Button>
+        {success && <p style={{ color: "green" }}>{success}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
       </RightSection>
 
       <CustomModal isOpen={open}>
@@ -194,8 +252,8 @@ const Login = () => {
           <Input
             type="text"
             placeholder="E-mail"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <Input
             type="password"

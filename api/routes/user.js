@@ -1,16 +1,20 @@
 import express from "express";
-import { addUser, deleteUser, getUsers, updateUser } from "../controllers/user.js";
+import { addUser, getUsers, loginUser } from "../controllers/user.js";
+import {addTarefa, deleteTarefa, updateTarefa } from "../controllers/tarefas.js";
 
-const router = express.Router()
+const router = express.Router();
+// cadastro de usuario
+router.get("/", getUsers);
+router.post("/register", addUser);
+router.post("/login", loginUser);
 
-router.get("/", getUsers)
+// cadastro de tarefas
 
-router.post("/", addUser)
 
-router.put("/:id", updateUser)
+router.get("/", addTarefa);
+router.post("/updateTarefa", updateTarefa);
+router.post("/deleteTarefa", deleteTarefa);
 
-router.delete("/:id", deleteUser)
 
-// router.post("/:id", compartilharUser)
 
-export default router
+export default router;
