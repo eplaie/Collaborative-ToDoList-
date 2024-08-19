@@ -203,11 +203,11 @@ const Grid = ({ users, setUsers, setOnEdit }) => {
 
   return (
     <TableContainer>
-      <HeaderRow>
+      {/* <HeaderRow>
         <TaskName>Nome</TaskName>
         <TaskDate>Data da Tarefa</TaskDate>
         <TaskActions>Ações</TaskActions>
-      </HeaderRow>
+      </HeaderRow> */}
 
       {sortedUsers.map((item) => (
         <TaskContainer key={item.id}>
@@ -293,3 +293,6 @@ const Grid = ({ users, setUsers, setOnEdit }) => {
 };
 
 export default Grid;
+
+
+// continuar a autenticação
