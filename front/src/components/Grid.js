@@ -19,17 +19,17 @@ const TableContainer = styled.div`
   max-width: 2000px;
 `;
 
-const HeaderRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background-color: #333;
-  color: #fff;
-  font-weight: bold;
-  border-radius: 5px;
-  margin-bottom: 8px;
-`;
+// const HeaderRow = styled.div`
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   padding: 10px;
+//   background-color: #333;
+//   color: #fff;
+//   font-weight: bold;
+//   border-radius: 5px;
+//   margin-bottom: 8px;
+// `;
 
 const TaskContainer = styled.div`
   display: flex;
@@ -116,7 +116,6 @@ const ModalContent = styled.div`
 `;
 
 const ModalTitle = styled.h2`
-  const ModalTitle = styled.h2
   margin: 0 0 20px 0;
   background: linear-gradient(to right, #9370DB, #33FFFF);
   -webkit-background-clip: text;
@@ -149,7 +148,7 @@ const Grid = ({ users, setUsers, setOnEdit }) => {
   };
 
   const handleDelete = async (id) => {
-    // Your delete logic here
+    // Lógica para deletar o item
     await axios
       .delete("http://localhost:8800/" + id)
       .then(({ data }) => {
@@ -161,7 +160,6 @@ const Grid = ({ users, setUsers, setOnEdit }) => {
       .catch(({ data }) => toast.error(data));
 
     setOnEdit(null);
-  
   };
 
   const toggleDetails = (id) => {
@@ -182,7 +180,7 @@ const Grid = ({ users, setUsers, setOnEdit }) => {
   };
 
   const handleAddSubtask = () => {
-    // Your logic to add a sub-task
+    // Lógica para adicionar uma sub-tarefa
     handleOpenModal();
   };
 
@@ -203,12 +201,6 @@ const Grid = ({ users, setUsers, setOnEdit }) => {
 
   return (
     <TableContainer>
-      {/* <HeaderRow>
-        <TaskName>Nome</TaskName>
-        <TaskDate>Data da Tarefa</TaskDate>
-        <TaskActions>Ações</TaskActions>
-      </HeaderRow> */}
-
       {sortedUsers.map((item) => (
         <TaskContainer key={item.id}>
           <TaskHeader>
@@ -248,8 +240,8 @@ const Grid = ({ users, setUsers, setOnEdit }) => {
               <Spacer />
               <div>
                 <InfoText>Data e Hora de Criação: {new Date(item.data_criacao).toLocaleString('pt-BR')}</InfoText>
-                <InfoText>Data e Hora da Modificação: {new Date(item.data_criacao).toLocaleString('pt-BR')}</InfoText>
-                <InfoText>Quem modificou: {new Date(item.data_criacao).toLocaleString('pt-BR')}</InfoText>
+                <InfoText>Data e Hora da Modificação: {item.data_modificacao ? new Date(item.data_modificacao).toLocaleString('pt-BR') : "Ainda não modificado"}</InfoText>
+                <InfoText>Quem modificou: {item.quem_modificou || "Desconhecido"}</InfoText>
               </div>
             </InfoContainer>
           </AdditionalInfo>
@@ -293,6 +285,3 @@ const Grid = ({ users, setUsers, setOnEdit }) => {
 };
 
 export default Grid;
-
-
-// continuar a autenticação
