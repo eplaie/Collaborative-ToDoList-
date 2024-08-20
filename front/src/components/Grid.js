@@ -97,6 +97,9 @@ const InfoText = styled.p`
   flex: 1;
 `;
 
+
+// teste:
+
 const CustomModal = styled.div`
   position: fixed;
   top: 50%;
