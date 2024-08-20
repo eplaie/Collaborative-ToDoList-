@@ -1,57 +1,78 @@
+// tarefas.js
 import { db } from "../db.js";
 
-export const addTarefa = (_, res) => {
-  const q = "SELECT * FROM tarefas";
+
+// Adicionar uma nova tarefa
+export const addTarefa = (req, res) => {
+  const q =
+    "INSERT INTO listas(`nome_lista`, `data_criacao`, `data_ultima_modificacao`, `usuario_criador_id`) VALUES (?)";
+
+  const values = [
+    req.body.nome_lista,
+    req.body.data_criacao,
+    req.body.data_ultima_modificacao,
+    req.body.usuario_criador_id,
+  ];
+
+  db.query(q, [values], (err) => {
+    if (err) {
+      console.error(err); // Exibe o erro no console
+      return res.status(500).json(err); // Retorna o erro com status 500
+    }
+
+    return res.status(200).json("Tarefa criada com sucesso.");
+  });
+};
+
+// Atualizar uma tarefa existente
+export const updateTarefa = (req, res) => {
+  const q =
+    "UPDATE listas SET `nome_lista` = ?, `data_ultima_modificacao` = ?, `usuario_criador_id` = ? WHERE `id` = ?";
+
+  const values = [
+    req.body.nome_lista,
+    req.body.data_ultima_modificacao,
+    req.body.usuario_criador_id,
+  ];
+
+  db.query(q, [...values, req.params.id], (err) => {
+    if (err) {
+      console.error(err); // Exibe o erro no console
+      return res.status(500).json(err); // Retorna o erro com status 500
+    }
+
+    return res.status(200).json("Lista atualizada com sucesso.");
+  });
+};
+
+// Buscar todas as tarefas
+export const getTarefas = (req, res) => {
+  const q = "SELECT * FROM listas";
 
   db.query(q, (err, data) => {
-    if (err) return res.json(err);
+    if (err) {
+      console.error(err); // Exibe o erro no console
+      return res.status(500).json(err); // Retorna o erro com status 500
+    }
 
     return res.status(200).json(data);
   });
 };
 
-export const AddTarefa = (req, res) => {
-  const q =
-    "INSERT INTO tarefas(`nome`, `data_vencimento`, `concluida`, `data_cadastro` ) VALUES(?)";
+// Buscar uma tarefa específica por ID
+export const getTarefaById = (req, res) => {
+  const q = "SELECT * FROM listas WHERE id = ?";
 
-  const values = [
-    req.body.nome,
-    req.body.data_vencimento,
-    req.body.concluida,
-    req.body.data_cadastro,
-  ];
+  db.query(q, [req.params.id], (err, data) => {
+    if (err) {
+      console.error(err); // Exibe o erro no console
+      return res.status(500).json(err); // Retorna o erro com status 500
+    }
 
-  db.query(q, [values], (err) => {
-    if (err) return res.json(err);
+    if (data.length === 0) {
+      return res.status(404).json("Tarefa não encontrada.");
+    }
 
-    return res.status(200).json("Tarefa criada.");
-  });
-};
-
-export const updateTarefa = (req, res) => {
-  const q =
-    "UPDATE tarefas SET `nome` = ?, `data_vencimento` = ?, `status` = ?, `data_cadastro` = ?,  WHERE `id` = ?";
-
-  const values = [
-    req.body.nome,
-    req.body.data_vencimento,
-    req.body.concluida,
-    req.body.data_cadastro,
-  ];
-
-  db.query(q, [...values, req.params.id], (err) => {
-    if (err) return res.json(err);
-
-    return res.status(200).json("Tarefa atualizada com sucesso.");
-  });
-};
-
-export const deleteTarefa = (req, res) => {
-  const q = "DELETE FROM tarefas WHERE `id` = ?";
-
-  db.query(q, [req.params.id], (err) => {
-    if (err) return res.json(err);
-
-    return res.status(200).json("Tarefa deletada com sucesso.");
+    return res.status(200).json(data[0]);
   });
 };
