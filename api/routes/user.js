@@ -1,18 +1,25 @@
 import express from "express";
 import { addUser, getUsers, loginUser } from "../controllers/user.js";
-import {addTarefa, updateTarefa, getTarefas, getTarefaById} from "../controllers/tarefas.js";
+import { addTarefa, updateTarefa, getTarefas, getTarefaById } from "../controllers/tarefas.js";
+import { addSubtarefa, updateSubtarefa, getSubtarefas, getSubtarefaById } from "../controllers/subtarefas.js";
 
 const router = express.Router();
-// cadastro de usuario
+
+// Cadastro de usuário
 router.get("/", getUsers);
 router.post("/register", addUser);
 router.post("/login", loginUser);
 
-// cadastro de tarefas
+// Cadastro de tarefas
+router.get("/tarefas", getTarefas); 
+router.post("/tarefas", addTarefa); 
+router.put("/tarefas/:id", updateTarefa); 
+router.get("/tarefas/:id", getTarefaById); 
 
-router.get("/tarefas", getTarefas); // Buscar todas as tarefas
-router.post("/tarefas", addTarefa); // Adicionar uma nova tarefa
-router.put("/tarefas/:id", updateTarefa); // Atualizar uma tarefa existente
-router.get("/tarefas/:id", getTarefaById); // Buscar uma tarefa específica por ID
+// Cadastro de subtarefas
+router.get("/subtarefas", getSubtarefas); 
+router.post("/subtarefas", addSubtarefa); 
+router.put("/subtarefas/:id", updateSubtarefa); 
+router.get("/subtarefas/:id", getSubtarefaById); 
 
 export default router;

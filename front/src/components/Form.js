@@ -65,18 +65,31 @@ const Form = ({ getUsers, onEdit, setOnEdit, userLoggedId }) => {
   const ref = useRef();
 
   useEffect(() => {
+    console.log("Form component rendered");
+    console.log("onEdit prop:", onEdit);
     if (onEdit) {
       const user = ref.current;
-
+      console.log("onEdit data:", onEdit);
       user.nome.value = onEdit.nome_lista;
       user.data_tarefa.value = onEdit.data_criacao;
+
+      console.log("Loaded edit data:", {
+        nome: user.nome.value,
+        data_tarefa: user.data_tarefa.value
+      });
     }
   }, [onEdit]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("handleSubmit called");
 
     const user = ref.current;
+
+    console.log("Submit data:", {
+      nome: user.nome.value,
+      data_tarefa: user.data_tarefa.value
+    });
 
     if (!user.nome.value || !user.data_tarefa.value) {
       return toast.warn("Preencha todos os campos!");
@@ -89,16 +102,20 @@ const Form = ({ getUsers, onEdit, setOnEdit, userLoggedId }) => {
       // usuario_criador_id: userLoggedId,  // Use o ID do usuário logado aqui
     };
 
+    console.log("Tarefa data to send:", tarefaData);
+
     try {
       if (onEdit) {
+        console.log("Updating task...");
         await axios.put(`http://localhost:8800/tarefas/${onEdit.id}`, tarefaData);
         toast.success("Tarefa atualizada com sucesso.");
       } else {
+        console.log("Creating new task...");
         await axios.post("http://localhost:8800/tarefas", tarefaData);
         toast.success("Tarefa criada com sucesso.");
       }
     } catch (error) {
-      console.error(error.response.data); // Exibe o erro no console
+      console.error("Error response data:", error.response?.data || error.message); // Exibe o erro no console
       toast.error("Erro ao salvar a tarefa.");
     }
 
@@ -110,7 +127,10 @@ const Form = ({ getUsers, onEdit, setOnEdit, userLoggedId }) => {
   };
 
   return (
-    <FormContainer ref={ref} onSubmit={handleSubmit}>
+    <FormContainer ref={ref} onSubmit={(e) => {
+      console.log("Form submit event triggered");
+      handleSubmit(e);
+    }}>
       <InputArea>
         <InputGroup>
           <Label>Nome da tarefa</Label>

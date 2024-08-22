@@ -1,35 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import styled from "styled-components";
 import { FaTrash, FaEdit, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Fab, Button } from "@mui/material";
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import Checkbox from '@mui/material/Checkbox';
-import { pink } from '@mui/material/colors';
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import Checkbox from "@mui/material/Checkbox";
+import { pink } from "@mui/material/colors";
 
 // Componentes estilizados
 const TableContainer = styled.div`
-  width: 112vh;
+  width: 118%;
   background-color: #272227;
-  padding: 70px;
+  padding: 20px;
   box-shadow: 0px 0px 5px #cccc;
   border-radius: 5px;
   max-width: 2000px;
 `;
-
-// const HeaderRow = styled.div`
-//   display: flex;
-//   justify-content: space-between;
-//   align-items: center;
-//   padding: 10px;
-//   background-color: #333;
-//   color: #fff;
-//   font-weight: bold;
-//   border-radius: 5px;
-//   margin-bottom: 8px;
-// `;
 
 const TaskContainer = styled.div`
   display: flex;
@@ -46,7 +34,7 @@ const TaskHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1px;
+  margin-bottom: 10px;
 `;
 
 const TaskName = styled.div`
@@ -55,7 +43,7 @@ const TaskName = styled.div`
 `;
 
 const TaskDate = styled.div`
-  flex: 8;
+  flex: 3;
   text-align: center;
 `;
 
@@ -78,10 +66,6 @@ const InfoContainer = styled.div`
   align-items: center;
 `;
 
-const Spacer = styled.div`
-  margin-left: 20px;
-`;
-
 const ToggleButton = styled.div`
   cursor: pointer;
   color: #ccc;
@@ -91,14 +75,11 @@ const ToggleButton = styled.div`
 `;
 
 const InfoText = styled.p`
-  margin: 10;
-  text-align: right;
-  padding-left: 400px; /* Espaço entre o ícone e o texto */
+  margin: 0;
+  padding: 10px;
   flex: 1;
+  margin-left: 400px;
 `;
-
-
-// teste:
 
 const CustomModal = styled.div`
   position: fixed;
@@ -120,7 +101,7 @@ const ModalContent = styled.div`
 
 const ModalTitle = styled.h2`
   margin: 0 0 20px 0;
-  background: linear-gradient(to right, #9370DB, #33FFFF);
+  background: linear-gradient(to right, #9370db, #33ffff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 `;
@@ -140,33 +121,68 @@ const ActionButtons = styled.div`
 `;
 
 // Componente Grid
-const Grid = ({ users, setUsers, setOnEdit }) => {
+const Grid = ({ tarefas, setTarefas, setOnEdit }) => {
   const [expandedItemId, setExpandedItemId] = useState(null);
   const [selectedHeader, setSelectedHeader] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [subtaskName, setSubtaskName] = useState("");
+  const [subtaskDate, setSubtaskDate] = useState("");
+  const [subtasks, setSubtasks] = useState({});
+
+  // Inicializa tarefas como um array vazio
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    const fetchTarefas = async () => {
+      try {
+        const response = await axios.get("http://localhost:8800/tarefas");
+        setTasks(response.data);
+      } catch (error) {
+        toast.error("Erro ao carregar tarefas.");
+      }
+    };
+
+    fetchTarefas();
+  }, []);
 
   const handleEdit = (item) => {
     setOnEdit(item);
   };
 
   const handleDelete = async (id) => {
-    // Lógica para deletar o item
-    await axios
-      .delete("http://localhost:8800/" + id)
-      .then(({ data }) => {
-        const newArray = users.filter((user) => user.id !== id);
-
-        setUsers(newArray);
-        toast.success(data);
-      })
-      .catch(({ data }) => toast.error(data));
-
+    try {
+      await axios.delete("http://localhost:8800/tarefas/" + id);
+      const newArray = tasks.filter((task) => task.id !== id);
+      setTasks(newArray);
+      toast.success("Tarefa excluída com sucesso.");
+    } catch (error) {
+      toast.error("Erro ao excluir tarefa.");
+    }
     setOnEdit(null);
   };
 
-  const toggleDetails = (id) => {
-    setExpandedItemId(expandedItemId === id ? null : id);
+  const toggleDetails = async (id) => {
+    if (expandedItemId === id) {
+      setExpandedItemId(null);
+      setSubtasks((prevSubtasks) => ({ ...prevSubtasks, [id]: [] }));
+    } else {
+      setExpandedItemId(id);
+
+      try {
+        const response = await axios.get(
+          `http://localhost:8800/subtarefas/${id}`
+        );
+        const vetor_teste = [];
+        vetor_teste[id] = response.data;
+        setSubtasks(vetor_teste);
+
+        console.log(response);
+        console.log(subtasks);
+      } catch (error) {
+        toast.error("Erro ao carregar subtarefas.");
+      }
+    }
   };
 
   const handleCheckboxChange = (itemId) => {
@@ -182,107 +198,135 @@ const Grid = ({ users, setUsers, setOnEdit }) => {
     setModalOpen(false);
   };
 
-  const handleAddSubtask = () => {
-    // Lógica para adicionar uma sub-tarefa
-    handleOpenModal();
+  const handleSubtaskSubmit = async () => {
+    try {
+      await axios.post("http://localhost:8800/subtarefas", {
+        nome: subtaskName,
+        data_vencimento: subtaskDate,
+        tarefa_id: expandedItemId, // tentativa de associar a subtarefa à tarefa selecionada
+      });
+      toast.success("Sub-tarefa adicionada com sucesso!");
+      handleCloseModal();
+
+      const response = await axios.get(
+        `http://localhost:8800/subtarefas/${expandedItemId}`
+      );
+      setSubtasks((prevSubtasks) => ({
+        ...prevSubtasks,
+        [expandedItemId]: response.data,
+      }));
+    } catch (error) {
+      toast.error("Erro ao adicionar sub-tarefa.");
+    }
   };
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
 
-  const sortedUsers = [...users].sort((a, b) => {
-    const priorityA = selectedHeader === a.id;
-    const priorityB = selectedHeader === b.id;
-
-    if (priorityA !== priorityB) {
-      return priorityA ? 1 : -1;
-    }
-
-    return new Date(a.data_tarefa) - new Date(b.data_tarefa);
-  });
-
   return (
     <TableContainer>
-      {sortedUsers.map((item) => (
-        <TaskContainer key={item.id}>
-          <TaskHeader>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Checkbox
-                checked={selectedHeader === item.id}
-                onChange={() => handleCheckboxChange(item.id)}
-                sx={{
-                  color: pink[800],
-                  '&.Mui-checked': {
-                    color: pink[600],
-                  },
-                }}
-              />
-              <TaskName>{item.nome}</TaskName>
-            </div>
-            <TaskDate>{new Date(item.data_tarefa).toLocaleDateString('pt-BR')}</TaskDate>
-            <TaskActions>
-              <FaEdit onClick={() => handleEdit(item)} />
-              <FaTrash onClick={() => handleDelete(item.id)} />
-            </TaskActions>
-          </TaskHeader>
-          <ToggleButton onClick={() => toggleDetails(item.id)}>
-            {expandedItemId === item.id ? <FaChevronUp /> : <FaChevronDown />}
-            <span style={{ marginLeft: '5px' }}>Detalhes</span>
-          </ToggleButton>
-          <AdditionalInfo show={expandedItemId === item.id}>
-            <InfoContainer>
-              <Fab
-                size="small"
-                color="primary"
-                aria-label="add-subtask"
-                onClick={handleAddSubtask}
-              >
-                +
-              </Fab>
-              <Spacer />
-              <div>
-                <InfoText>Data e Hora de Criação: {new Date(item.data_criacao).toLocaleString('pt-BR')}</InfoText>
-                <InfoText>Data e Hora da Modificação: {item.data_modificacao ? new Date(item.data_modificacao).toLocaleString('pt-BR') : "Ainda não modificado"}</InfoText>
-                <InfoText>Quem modificou: {item.quem_modificou || "Desconhecido"}</InfoText>
-              </div>
-            </InfoContainer>
-          </AdditionalInfo>
-        </TaskContainer>
-      ))}
-
+      {tasks.length > 0
+        ? tasks.map((item) => (
+            <TaskContainer key={item.id}>
+              <TaskHeader>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <Checkbox
+                    checked={selectedHeader === item.id}
+                    onChange={() => handleCheckboxChange(item.id)}
+                    sx={{
+                      color: pink[800],
+                      "&.Mui-checked": {
+                        color: pink[600],
+                      },
+                    }}
+                  />
+                  <TaskName>{item.nome_lista}</TaskName>
+                </div>
+                <TaskDate>
+                  {/* {new Date(item.data_criacao).toLocaleDateString("pt-BR")} exibir data no principal */}
+                </TaskDate>
+                <TaskActions>
+                  <FaEdit onClick={() => handleEdit(item)} />
+                  <FaTrash onClick={() => handleDelete(item.id)} />
+                </TaskActions>
+              </TaskHeader>
+              <ToggleButton onClick={() => toggleDetails(item.id)}>
+                {expandedItemId === item.id ? (
+                  <FaChevronUp />
+                ) : (
+                  <FaChevronDown />
+                )}
+                <span style={{ marginLeft: "5px" }}>Detalhes</span>
+              </ToggleButton>
+              <AdditionalInfo show={expandedItemId === item.id}>
+                <InfoContainer>
+                  <Fab
+                    size="small"
+                    color="primary"
+                    aria-label="add-subtask"
+                    onClick={handleOpenModal}
+                  >
+                    +
+                  </Fab>
+                  <div>
+                    <InfoText>
+                      Data e Hora de Criação:{" "}
+                      {new Date(item.data_criacao).toLocaleString("pt-BR")}
+                    </InfoText>
+                    <InfoText>
+                      Data e Hora da Modificação:{" "}
+                      {item.data_ultima_modificacao
+                        ? new Date(item.data_ultima_modificacao).toLocaleString(
+                            "pt-BR"
+                          )
+                        : "Ainda não modificado"}
+                    </InfoText>
+                  </div>
+                </InfoContainer>
+              </AdditionalInfo>
+            </TaskContainer>
+          ))
+        : null}
+      {/* Modal */}
+      <CustomModal isOpen={modalOpen}>
+        <ModalContent>
+          <ModalTitle>Adicionar Sub-tarefa</ModalTitle>
+          <Input
+            type="text"
+            placeholder="Nome da Sub-tarefa"
+            value={subtaskName}
+            onChange={(e) => setSubtaskName(e.target.value)}
+          />
+          <Input
+            type="date"
+            value={subtaskDate}
+            onChange={(e) => setSubtaskDate(e.target.value)}
+          />
+          <ActionButtons>
+            <Button variant="contained" color="primary" onClick={handleSubtaskSubmit}>
+              Adicionar
+            </Button>
+            <Button variant="outlined" onClick={handleCloseModal}>
+              Cancelar
+            </Button>
+          </ActionButtons>
+        </ModalContent>
+      </CustomModal>
+      {/* Snackbar */}
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
       >
         <Alert
           onClose={handleCloseSnackbar}
           severity="success"
-          variant="filled"
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
-          Você concluiu sua tarefa!
+          Tarefa concluida!
         </Alert>
       </Snackbar>
-
-      <CustomModal isOpen={modalOpen}>
-        <ModalContent>
-          <ModalTitle>Adicionar uma Sub-Tarefa</ModalTitle>
-          <Input
-            type="text"
-            placeholder="Nome da Tarefa"
-          />
-          <Input
-            type="date"
-            placeholder="Data"
-          />
-          <ActionButtons>
-            <Button onClick={() => { /* Adicionar lógica de cadastro */ }}>Cadastrar</Button>
-            <Button onClick={handleCloseModal}>Voltar</Button>
-          </ActionButtons>
-        </ModalContent>
-      </CustomModal>
     </TableContainer>
   );
 };
