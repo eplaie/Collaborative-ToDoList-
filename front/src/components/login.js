@@ -136,9 +136,9 @@ const Login = () => {
 
   const handleOpen = () => {
     setOpen(true);
-    setEmail(""); // Limpar o e-mail
-    setPassword(""); // Limpar a senha
-    setError(""); // Limpar mensagens de erro
+    setEmail(""); // Limpar 
+    setPassword(""); 
+    setError(""); 
   };
 
   const handleClose = () => setOpen(false);
@@ -146,14 +146,14 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       setError(""); // Limpar erros anteriores
-      setSuccess(""); // Limpar mensagens de sucesso anteriores
+      setSuccess(""); 
 
       const response = await axios.post("http://localhost:8800/login", {
         email,
         senha: password,
       });
 
-      // Se o login for bem-sucedido, redirecione para a página /home
+   
       if (response.status === 200) {
         window.location.href = "http://localhost:3000/home";
       }
@@ -166,7 +166,7 @@ const Login = () => {
   const handleRegister = async () => {
     try {
       setError(""); // Limpar erros anteriores
-      setSuccess(""); // Limpar mensagens de sucesso anteriores
+      setSuccess(""); 
       console.log({
         nome: name,
         email,
@@ -181,7 +181,7 @@ const Login = () => {
       });
       console.log("Cadastro realizado com sucesso:", response.data);
       setSuccess("Cadastro realizado com sucesso!");
-      // Limpar campos ou redirecionar
+
       setName("");
       setEmail("");
       setPhone("");
