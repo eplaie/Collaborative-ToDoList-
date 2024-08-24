@@ -99,7 +99,7 @@ const Form = ({ getUsers, onEdit, setOnEdit, userLoggedId }) => {
       nome_lista: user.nome.value,
       data_criacao: user.data_tarefa.value,
       data_ultima_modificacao: new Date().toISOString().slice(0, 10),
-      // usuario_criador_id: userLoggedId,  // Use o ID do usuário logado aqui
+      usuario_criador_id: localStorage.getItem('UsuarioId')
     };
 
     console.log("Tarefa data to send:", tarefaData);
