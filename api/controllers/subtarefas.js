@@ -43,7 +43,7 @@ export const updateSubtarefa = (req, res) => {
 // Buscar todas as subtarefas
 export const getSubtarefas = (req, res) => {
   const q = "SELECT * FROM tarefas";
-    console.log("teste")
+    // console.log("teste")
   db.query(q, (err, data) => {
     if (err) {
       console.error(err);
@@ -54,7 +54,7 @@ export const getSubtarefas = (req, res) => {
   });
 };
 
-// Buscar uma subtarefa específica por ID
+
 export const getSubtarefaById = (req, res) => {
   const q = "SELECT * FROM tarefas WHERE lista_id = ?";
     // console.log(req.params);

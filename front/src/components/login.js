@@ -152,9 +152,12 @@ const Login = () => {
         email,
         senha: password,
       });
-
-   
       if (response.status === 200) {
+        
+      localStorage.setItem('UsuarioId', response.data.id);
+        
+      localStorage.setItem('UsuarioNome', response.data.nome);
+
         window.location.href = "http://localhost:3000/home";
       }
     } catch (error) {

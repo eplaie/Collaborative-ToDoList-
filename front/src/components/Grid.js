@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import styled from "styled-components";
 import { FaTrash, FaEdit, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { MdGroupAdd } from "react-icons/md";
 import { Fab, Button } from "@mui/material";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
@@ -129,6 +130,8 @@ const Grid = ({ tarefas, setTarefas, setOnEdit }) => {
   const [subtaskName, setSubtaskName] = useState("");
   const [subtaskDate, setSubtaskDate] = useState("");
   const [subtasks, setSubtasks] = useState({});
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [participantEmail, setParticipantEmail] = useState("");
 
   // Inicializa tarefas como um array vazio
   const [tasks, setTasks] = useState([]);
@@ -136,7 +139,9 @@ const Grid = ({ tarefas, setTarefas, setOnEdit }) => {
   useEffect(() => {
     const fetchTarefas = async () => {
       try {
-        const response = await axios.get("http://localhost:8800/tarefas");
+        const response = await axios.get(`http://localhost:8800/tarefas?usuario_id=${
+          localStorage.getItem('UsuarioId')
+        }`);
         setTasks(response.data);
       } catch (error) {
         toast.error("Erro ao carregar tarefas.");
@@ -173,9 +178,10 @@ const Grid = ({ tarefas, setTarefas, setOnEdit }) => {
         const response = await axios.get(
           `http://localhost:8800/subtarefas/${id}`
         );
-        const vetor_teste = [];
-        vetor_teste[id] = response.data;
-        setSubtasks(vetor_teste);
+        setSubtasks((prevSubtasks) => ({
+          ...prevSubtasks,
+          [id]: response.data || [], // Garante que seja sempre um array
+        }));
 
         console.log(response);
         console.log(subtasks);
@@ -191,6 +197,8 @@ const Grid = ({ tarefas, setTarefas, setOnEdit }) => {
   };
 
   const handleOpenModal = () => {
+    const UsuarioId = localStorage.getItem('UsuarioId');
+    console.log(UsuarioId);
     setModalOpen(true);
   };
 
@@ -198,12 +206,20 @@ const Grid = ({ tarefas, setTarefas, setOnEdit }) => {
     setModalOpen(false);
   };
 
+  const handleOpenShareModal = () => {
+    setShareModalOpen(true);
+  };
+
+  const handleCloseShareModal = () => {
+    setShareModalOpen(false);
+  };
+
   const handleSubtaskSubmit = async () => {
     try {
       await axios.post("http://localhost:8800/subtarefas", {
         nome: subtaskName,
         data_vencimento: subtaskDate,
-        tarefa_id: expandedItemId, // tentativa de associar a subtarefa à tarefa selecionada
+        tarefa_id: expandedItemId,
       });
       toast.success("Sub-tarefa adicionada com sucesso!");
       handleCloseModal();
@@ -213,12 +229,38 @@ const Grid = ({ tarefas, setTarefas, setOnEdit }) => {
       );
       setSubtasks((prevSubtasks) => ({
         ...prevSubtasks,
-        [expandedItemId]: response.data,
+        [expandedItemId]: response.data || [],
       }));
     } catch (error) {
       toast.error("Erro ao adicionar sub-tarefa.");
     }
   };
+
+  const handleShareSubmit = async () => {
+    try {
+      const UsuarioId = localStorage.getItem('UsuarioId');
+      if (!participantEmail) {
+        toast.error("Por favor, insira o email do participante.");
+        return;
+      }
+  
+      const response = await axios.post("http://localhost:8800/compartilhar", {
+        lista_id: expandedItemId, // ID da tarefa que está sendo compartilhada
+        usuario_convidado_id: participantEmail, // Utilize o email como identificador por enquanto
+      });
+  
+      if (response.status === 200) {
+        toast.success("Participante adicionado com sucesso!");
+        handleCloseShareModal();
+      } else {
+        toast.error("Erro ao adicionar participante.");
+      }
+    } catch (error) {
+      toast.error("Erro ao adicionar participante.");
+    }
+  };
+  
+  
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
@@ -230,7 +272,7 @@ const Grid = ({ tarefas, setTarefas, setOnEdit }) => {
         ? tasks.map((item) => (
             <TaskContainer key={item.id}>
               <TaskHeader>
-                <div style={{ display: "flex", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", flex: 1 }}>
                   <Checkbox
                     checked={selectedHeader === item.id}
                     onChange={() => handleCheckboxChange(item.id)}
@@ -250,7 +292,12 @@ const Grid = ({ tarefas, setTarefas, setOnEdit }) => {
                   <FaEdit onClick={() => handleEdit(item)} />
                   <FaTrash onClick={() => handleDelete(item.id)} />
                 </TaskActions>
+                <MdGroupAdd
+                  style={{ cursor: "pointer", marginLeft: "auto" }}
+                  onClick={handleOpenShareModal}
+                />
               </TaskHeader>
+
               <ToggleButton onClick={() => toggleDetails(item.id)}>
                 {expandedItemId === item.id ? (
                   <FaChevronUp />
@@ -284,11 +331,15 @@ const Grid = ({ tarefas, setTarefas, setOnEdit }) => {
                     </InfoText>
                   </div>
                 </InfoContainer>
+                {Array.isArray(subtasks[expandedItemId]) && subtasks[expandedItemId].map((subtask) => (
+                  <div key={subtask.id}>{subtask.nome}</div>
+                ))}
               </AdditionalInfo>
             </TaskContainer>
           ))
-        : null}
-      {/* Modal */}
+        : "Nenhuma tarefa encontrada"}
+
+      {/* Modal de Adicionar Sub-tarefa */}
       <CustomModal isOpen={modalOpen}>
         <ModalContent>
           <ModalTitle>Adicionar Sub-tarefa</ModalTitle>
@@ -300,6 +351,7 @@ const Grid = ({ tarefas, setTarefas, setOnEdit }) => {
           />
           <Input
             type="date"
+            placeholder="Data de Vencimento"
             value={subtaskDate}
             onChange={(e) => setSubtaskDate(e.target.value)}
           />
@@ -307,24 +359,42 @@ const Grid = ({ tarefas, setTarefas, setOnEdit }) => {
             <Button variant="contained" color="primary" onClick={handleSubtaskSubmit}>
               Adicionar
             </Button>
-            <Button variant="outlined" onClick={handleCloseModal}>
+            <Button variant="outlined" color="secondary" onClick={handleCloseModal}>
               Cancelar
             </Button>
           </ActionButtons>
         </ModalContent>
       </CustomModal>
-      {/* Snackbar */}
+
+      {/* Modal de Compartilhamento */}
+      <CustomModal isOpen={shareModalOpen}>
+        <ModalContent>
+          <ModalTitle>Compartilhar Tarefa</ModalTitle>
+          <Input
+            type="email"
+            placeholder="Email do Participante"
+            value={participantEmail}
+            onChange={(e) => setParticipantEmail(e.target.value)}
+          />
+          <ActionButtons>
+          <Button onClick={handleShareSubmit} variant="contained">
+                      Compartilhar
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={handleCloseShareModal}>
+              Cancelar
+            </Button>
+          </ActionButtons>
+        </ModalContent>
+      </CustomModal>
+
+      {/* Snackbar de Notificação */}
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={3000}
+        autoHideDuration={6000}
         onClose={handleCloseSnackbar}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity="success"
-          sx={{ width: "100%" }}
-        >
-          Tarefa concluida!
+        <Alert onClose={handleCloseSnackbar} severity="info">
+         Tarefa concluida com sucesso!
         </Alert>
       </Snackbar>
     </TableContainer>

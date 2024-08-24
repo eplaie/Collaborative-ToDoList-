@@ -2,6 +2,7 @@ import express from "express";
 import { addUser, getUsers, loginUser } from "../controllers/user.js";
 import { addTarefa, updateTarefa, getTarefas, getTarefaById } from "../controllers/tarefas.js";
 import { addSubtarefa, updateSubtarefa, getSubtarefas, getSubtarefaById } from "../controllers/subtarefas.js";
+import { enviarConvite, responderConvite, getConvites } from "../controllers/convites.js";
 
 const router = express.Router();
 
@@ -21,5 +22,9 @@ router.get("/subtarefas", getSubtarefas);
 router.post("/subtarefas", addSubtarefa); 
 router.put("/subtarefas/:id", updateSubtarefa); 
 router.get("/subtarefas/:id", getSubtarefaById); 
+
+router.post("/compartilhar", enviarConvite);
+router.put("/compartilhar/:id", responderConvite);
+router.get("/compartilhar", getConvites);
 
 export default router;

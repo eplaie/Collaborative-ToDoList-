@@ -42,9 +42,10 @@ export const updateTarefa = (req, res) => {
 
 // Buscar todas as tarefas
 export const getTarefas = (req, res) => {
-  const q = "SELECT * FROM listas";
+  const usuario_id = req.query.usuario_id;
+  const q = "SELECT * FROM listas WHERE usuario_criador_id=?";
 
-  db.query(q, (err, data) => {
+  db.query(q, [usuario_id], (err, data) => {
     if (err) {
       console.error(err);
       return res.status(500).json(err);
