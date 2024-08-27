@@ -1,5 +1,4 @@
 import express from "express";
-import nodemailer from "nodemailer";
 import { db } from "../db.js";  
 
 const router = express.Router();
@@ -53,7 +52,7 @@ export const getConvites = (req, res) => {
   const usuario_convidado_id = req.query.usuario_convidado_id;
   const q = `
     SELECT * FROM convites
-    WHERE usuario_convidado_id = ?
+    WHERE usuario_convidado_id = ? AND status = 'PENDENTE'
   `;
 
   db.query(q, [usuario_convidado_id], (err, data) => {

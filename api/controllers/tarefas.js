@@ -20,14 +20,14 @@ export const addTarefa = (req, res) => {
   });
 };
 
-// Atualizar uma tarefa existente
 export const updateTarefa = (req, res) => {
   const q =
-    "UPDATE listas SET `nome_lista` = ?, `usuario_criador_id` = ? WHERE `id` = ?";
+    "UPDATE listas SET `nome_lista` = ?, `usuario_criador_id` = ?, `data_ultima_modificacao` = ? WHERE `id` = ?";
 
   const values = [
     req.body.nome_lista,
     req.body.usuario_criador_id,
+    req.body.data_tarefa, // Adiciona a data da tarefa aqui
   ];
 
   db.query(q, [...values, req.params.id], (err) => {
@@ -40,12 +40,39 @@ export const updateTarefa = (req, res) => {
   });
 };
 
+
+export const deleteTarefas = (req, res) => {
+  const q = "DELETE FROM listas WHERE `id` = ?";
+
+  db.query(q, [req.params.id], (err) => {
+    if (err) return res.json(err);
+
+    return res.status(200).json("Tarefa deletado com sucesso.");
+  });
+};
+
 // Buscar todas as tarefas
 export const getTarefas = (req, res) => {
   const usuario_id = req.query.usuario_id;
-  const q = "SELECT * FROM listas WHERE usuario_criador_id=?";
+  // const q = "SELECT * FROM listas WHERE usuario_criador_id=?";
 
-  db.query(q, [usuario_id], (err, data) => {
+  const q = `
+  SELECT 
+    li.* ,
+    CASE cv.usuario_convidado_id 
+    WHEN ? THEN true
+    ELSE false
+END 'compartilhado'
+FROM 
+    tb_final_bd.listas li,
+	tb_final_bd.convites cv 
+    where 
+    li.usuario_criador_id = ?
+	or
+    (cv.usuario_convidado_id=? and cv.status='ACEITO')
+  `
+
+  db.query(q, [usuario_id, usuario_id, usuario_id], (err, data) => {
     if (err) {
       console.error(err);
       return res.status(500).json(err);

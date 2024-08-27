@@ -1,7 +1,7 @@
 import express from "express";
 import { addUser, getUsers, loginUser } from "../controllers/user.js";
-import { addTarefa, updateTarefa, getTarefas, getTarefaById } from "../controllers/tarefas.js";
-import { addSubtarefa, updateSubtarefa, getSubtarefas, getSubtarefaById } from "../controllers/subtarefas.js";
+import { addTarefa, updateTarefa, getTarefas, getTarefaById, deleteTarefas } from "../controllers/tarefas.js";
+import { addSubtarefa, updateSubtarefa, getSubtarefas, getSubtarefaById} from "../controllers/subtarefas.js";
 import { enviarConvite, responderConvite, getConvites } from "../controllers/convites.js";
 
 const router = express.Router();
@@ -16,6 +16,7 @@ router.get("/tarefas", getTarefas);
 router.post("/tarefas", addTarefa); 
 router.put("/tarefas/:id", updateTarefa); 
 router.get("/tarefas/:id", getTarefaById); 
+router.delete("/tarefas/:id", deleteTarefas);
 
 // Cadastro de subtarefas
 router.get("/subtarefas", getSubtarefas); 
